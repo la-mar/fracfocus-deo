@@ -1,0 +1,68 @@
+
+default_aliases: &x-aliases
+
+
+endpoints:
+  registry:
+    enabled: true
+    model: api.models.Registry
+    # path: /wells
+    # options:
+    #   - since
+    mappings:
+      aliases:
+        <<: *x-aliases
+        pKey: pkey
+        JobStartDate: job_start_date
+        JobEndDate: job_end_date
+        APINumber: api
+        StateNumber: state_no
+        CountyNumber: county_no
+        OperatorName: operator
+        WellName: well_name
+        Latitude: lat
+        Longitude: lon
+        Projection: proj
+        TVD: tvd
+        TotalBaseWaterVolume: total_base_water_volume
+        TotalBaseNonWaterVolume: total_base_non_water_volume
+        StateName: state
+        CountyName: county
+        FFVersion: ff_version
+        FederalWell: is_federal_well
+        IndianWell: is_indian_well
+        Source: source
+        DTMOD: dtmod
+    exclude: []
+  ingredients:
+    enabled: true
+    model: api.models.Ingredients
+    mappings:
+      aliases:
+        pKey: pkey
+        pKeyPurpose: pkey_purpose
+        pKeyDisclosure: pkey_disclosure
+        IngredientName: ingredient_name
+        CASNumber: cas_number
+        PercentHighAdditive: percent_high_additive
+        PercentHFJob: percent_hf_job
+        IngredientComment: ingredient_comment
+        IngredientMSDS: ingredient_msds
+        MassIngredient: ingredient_mass
+        ClaimantCompany: claimant_company
+    exclude: []
+purpose:
+  enabled: true
+  model: api.models.Purpose
+  mappings:
+    alias:
+      pKey: pkey
+      pKeyRegistryUpload: pkey_registry
+      TradeName: trade_name
+      Supplier: supplier
+      Purpose: purpose
+      SystemApproach: system_approach
+      IsWater: is_water
+      PercentHFJob: percent_hf_job
+      IngredientMSDS: ingredient_msds
+  exclude: []
