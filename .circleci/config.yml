@@ -1,0 +1,146 @@
+version: 2.1
+
+defaults:
+  filters: &on_tags_only
+    tags:
+      only: /^\d+\.\d+\.\d+$/
+    branches:
+      ignore: /.*/
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+  docker: circleci/docker@0.5.19
+
+jobs:
+  run-tests:
+    docker:
+      - image: circleci/python:3.7
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - deps-{{ checksum "poetry.lock" }}
+
+      - run:
+          name: Install Dependencies
+          command: poetry install
+
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - run:
+          name: lint
+          command: poetry run pylint iwell --exit-zero --rcfile=.pylintrc
+
+      - run:
+          name: CodeClimate before-build
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
+
+      - run:
+          name: Run python tests
+          command: poetry run pytest --cov iwell tests/ --cov-report xml:./coverage/python/coverage.xml --log-level info --log-cli-level debug
+
+      - run:
+          name: CodeClimate combine and upload coverage
+          command: |
+            # Format the various coverage reports
+            ./cc-test-reporter format-coverage -t coverage.py -o coverage/codeclimate.python.json coverage/python/coverage.xml
+            # Combine the test coverage reports
+            ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+            # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
+            ./cc-test-reporter upload-coverage || true
+
+      - codecov/upload:
+          file: ./coverage/python/coverage.xml
+
+      - store_test_results:
+          path: coverage
+
+  build-image:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: driftwood/iwell
+          tag: $(echo ${CIRCLE_SHA1} | cut -c -7),dev
+      - docker/push:
+          image: driftwood/iwell
+          tag: $(echo ${CIRCLE_SHA1} | cut -c -7),dev
+
+  # publish-image:
+  #   executor: docker/docker
+  #   steps:
+  #     - setup_remote_docker
+  #     - checkout
+  #     - docker/check
+  #     - docker/publish:
+  #         image: driftwood/iwell
+  #         tag: latest
+
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=${CIRCLE_TAG}
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} .
+
+  deployment:
+    # Same environment
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      # Gets the code
+      - checkout
+        # Use `poetry publish` to Publish the package using username and password from CircleCI environment variables
+        # Which can be configured inside CircleCI's interface
+        # - run:
+        #     name: Push to PyPI
+        #     command: |
+        #       poetry publish --build --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" --no-interaction
+
+# In the workflows section, we specify when we want to run the jobs defined
+workflows:
+  version: 2.1
+
+  # The run-tests we will run EVERYTIME a piece of code changes
+  test-and-build:
+    jobs:
+      - run-tests:
+          context: global
+      - build-image:
+          context: global
+
+  # The deployment workflow publishes the package
+  deployment:
+    jobs:
+      - run-tests:
+          context: global
+      - build-image:
+          context: global
+      - publish-github-release:
+          context: global
+          requires:
+            - run-tests
+          filters:
+            <<: *on_tags_only
+      - docker/publish:
+          image: driftwood/iwell
+          tag: latest, ${CIRCLE_TAG}
+          requires:
+            - run-tests
+            - build-image
+          filters:
+            <<: *on_tags_only
