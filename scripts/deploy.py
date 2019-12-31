@@ -41,15 +41,16 @@ project = pkg_meta.get("name")
 version = pkg_meta.get("version")
 
 ENV = os.getenv("ENV", "prod")
-AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
-SERVICE_NAME: str = os.getenv("SERVICE_NAME")  # type: ignore
+AWS_ACCOUNT_ID = os.getenv(
+    "AWS_ACCOUNT_ID", boto3.client("sts").get_caller_identity().get("Account")
+)
 IMAGE_TAG: str = os.getenv("IMAGE_TAG")  # type: ignore
 IMAGE_NAME: str = f"{os.getenv('IMAGE_NAME')}{':' if IMAGE_TAG else ''}{IMAGE_TAG or ''}"
 
 CLUSTER_NAME = os.getenv("ECS_CLUSTER")  # type: ignore
-TASK_IAM_ROLE = f"arn:aws:iam::{AWS_ACCOUNT_ID}:role/fracfocus-task-role"
+TASK_IAM_ROLE = f"arn:aws:iam::{AWS_ACCOUNT_ID}:role/{project}-task-role"
 
-if not any([ENV, AWS_ACCOUNT_ID, SERVICE_NAME, IMAGE_NAME, CLUSTER_NAME]):
+if not any([ENV, AWS_ACCOUNT_ID, IMAGE_NAME, CLUSTER_NAME]):
     raise ValueError("One or more environment variables are missing")
 
 
@@ -64,10 +65,6 @@ SERVICES = [
         "cluster_name": "ecs-collector-cluster",
         "task_type": "scheduled",
     },
-]
-
-IMAGES = [
-    {"name": SERVICE_NAME, "dockerfile": "Dockerfile", "build_context": "."},
 ]
 
 TAGS = [
@@ -225,10 +222,7 @@ for deployment in SERVICES:
     except:
         prev_rev_num = "?"
     cdef = get_task_definition(
-        name=task,
-        task_name=task,
-        tags=TAGS,
-        task_iam_role_arn=TASK_IAM_ROLE,
+        name=task, task_name=task, tags=TAGS, task_iam_role_arn=TASK_IAM_ROLE,
     )
 
     # pprint(cdef)

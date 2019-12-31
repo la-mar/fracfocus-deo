@@ -67,15 +67,15 @@ build: login
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${COMMIT_HASH}
 	# docker push ${IMAGE_NAME}:${COMMIT_HASH}
 
+push:
+	docker push ${IMAGE_NAME}
+
 all:
 	make build login push
 	# make fracfocus-redis-deo build login push
 
 deploy:
-	# Update SSM parameters from local dotenv and deploy a new version of the service to ECS
-	${eval AWS_ACCOUNT_ID=$(shell echo ${AWS_ACCOUNT_ID})}
-	@echo ${AWS_ACCOUNT_ID}
-	export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} && aws-vault exec ${ENV} -- poetry run python scripts/deploy.py
+	aws-vault exec ${ENV} -- poetry run python scripts/deploy.py
 
 redeploy:
 	aws ecs update-service --cluster ${ECS_CLUSTER} --service ${SERVICE_NAME} --force-new-deployment --profile ${ENV}
@@ -109,6 +109,8 @@ compose:
 secret-key:
 	python3 -c 'import secrets; print(secrets.token_urlsafe(256));'
 
-run-image:
+docker-run-collector:
 	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run collector
 
+docker-run-web:
+	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run web
