@@ -4,6 +4,7 @@ CTX:=.
 AWS_ACCOUNT_ID:=$$(aws-vault exec ${ENV} -- aws sts get-caller-identity | jq .Account -r)
 IMAGE_NAME:=driftwood/fracfocus
 DOCKERFILE:=Dockerfile
+ENV:=prod
 
 cc-expand:
 	# show expanded configuration
