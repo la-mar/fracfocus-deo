@@ -15,7 +15,7 @@ loggers.config()
 
 
 # instantiate the extensions
-db: SQLAlchemy = SQLAlchemy()
+db = SQLAlchemy()
 toolbar = DebugToolbarExtension()
 migrate = Migrate()
 
@@ -28,6 +28,11 @@ def create_app(script_info=None):
     db.init_app(app)
     toolbar.init_app(app)
     migrate.init_app(app, db)
+
+    from api.completion import comp_blueprint
+
+    # register blueprints
+    app.register_blueprint(comp_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor

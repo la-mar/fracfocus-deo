@@ -1,14 +1,13 @@
-from typing import List, Dict, NewType, Union
+import logging
+from typing import Dict, List, Union
+
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from sqlalchemy.types import Integer, Float
-import uuid
-import logging
+from sqlalchemy.types import Integer
 
-from fracfocus import db
 from api.mixins import CoreMixin
-import util
-import util.deco
+from fracfocus import db
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ PROPPANT_REGEX = "sand|silica|propp|mesh"
 
 
 class Registry(CoreMixin, db.Model):
-
+    # pylint: disable=no-member
     __tablename__ = "registry"
 
     upload_key = db.Column(UUID(as_uuid=True), primary_key=True)
@@ -79,7 +78,7 @@ class Registry(CoreMixin, db.Model):
                 cls.api10,
                 func.max(cls.total_base_water_volume).label("total_base_water_volume"),
                 func.sum(cls.ingredient_mass).cast(Integer).label("ingredient_mass"),
-                (func.sum(cls.percent_hf_job) / 100).label("percent_hf_job"),
+                (func.sum(cls.percent_hf_job)).label("hf_job_pct"),
             )
             .filter(cls.ingredient_name.op("~*")(PROPPANT_REGEX))
             .filter(cls.api10.in_(api10s))
@@ -102,7 +101,7 @@ class Registry(CoreMixin, db.Model):
             cls.s.query(agg2)
             .with_entities(
                 agg2,
-                ((agg2.c.water_mass * agg2.c.percent_hf_job / 100)).label("prop_mass"),
+                ((agg2.c.water_mass * agg2.c.hf_job_pct / 100)).label("prop_mass"),
             )
             .subquery()
         )
@@ -122,22 +121,3 @@ class Registry(CoreMixin, db.Model):
         if stmt_only:
             return qry.statement
         return [x._asdict() for x in qry.all()]
-
-
-if __name__ == "__main__":
-    from fracfocus import create_app, db
-    import datetime
-
-    app = create_app()
-    app.app_context().push()
-
-    cls = Registry
-
-    # cls.completion_calcs(api10="4217336705")
-
-    api10s = ["4217336705", "4247537815"]
-
-    # cls.s.rollback()
-
-    cls.completion_calcs(api10s)
-

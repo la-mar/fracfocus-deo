@@ -47,6 +47,7 @@ class FileDownloader:
 
 class ZipDownloader(FileDownloader):
     download_to = conf.COLLECTOR_DOWNLOAD_PATH
+    prefix = conf.COLLECTOR_FILE_PREFIX
 
     def __init__(self, url: str, download_to: str = None, csv_only: bool = True):
         super().__init__(url=url)
@@ -58,12 +59,17 @@ class ZipDownloader(FileDownloader):
     def paths(self):
         filelist = self._keep_only(self.filelist) if self.csv_only else self.filelist
         result = [Path(os.path.join(self.download_to, x.filename)) for x in filelist]
+        result = self.filter_by_prefix(result)
         return self.sort_by_file_no(result)
 
     @property
     def groups(self) -> Dict[str, List[Path]]:
         groups = itertools.groupby(self.paths, key=lambda f: f.name.split("_")[0])
         return {k: list(g) for k, g in groups}
+
+    def filter_by_prefix(self, filelist: List[Path], prefix: str = None) -> List[Path]:
+        prefix = prefix or self.prefix
+        return [x for x in filelist if prefix in x.name]
 
     def unpack(self, r: requests.Response = None) -> ZipDownloader:
         r = r or self.get()
@@ -94,11 +100,13 @@ class ZipDownloader(FileDownloader):
     @staticmethod
     def get_file_key(filename: str) -> int:
         result = re.findall(r"\d+", filename)
-        result = int(result[0]) if len(result) > 0 else result
-        return result
+        n = int(result[0]) if len(result) > 0 else 0
+        return n
 
-    def sort_by_file_no(self, filelist: List[Path]) -> List[Path]:
-        return sorted(filelist, key=lambda x: self.get_file_key(x.name))
+    def sort_by_file_no(self, filelist: List[Path], reverse: bool = True) -> List[Path]:
+        result = list(sorted(filelist, key=lambda x: self.get_file_key(x.name)))
+        result = list(reversed(result)) if reverse else result
+        return result
 
 
 if __name__ == "__main__":

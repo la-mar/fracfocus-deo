@@ -145,24 +145,26 @@ class CoreMixin(object):
                 affected += len(records)
 
             except IntegrityError as ie:
-                logger.warning(ie)
+                logger.debug(ie.args[0])
+
+                # fragment and reprocess
                 if len(records) > 1:
                     first_half = records[: len(records) // 2]
                     second_half = records[len(records) // 2 :]
                     cls.core_insert(
-                        first_half,
-                        len(first_half) // 4,
+                        records=first_half,
+                        size=len(first_half) // 4,
                         update_on_conflict=update_on_conflict,
                         ignore_on_conflict=ignore_on_conflict,
                     )
                     cls.core_insert(
-                        second_half,
-                        len(second_half) // 4,
+                        records=second_half,
+                        size=len(second_half) // 4,
                         update_on_conflict=update_on_conflict,
                         ignore_on_conflict=ignore_on_conflict,
                     )
             except Exception as e:
-                logger.exception(e)
+                logger.error(e)
                 import json
                 from util.jsontools import ObjectEncoder
 

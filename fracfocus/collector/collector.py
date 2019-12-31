@@ -71,30 +71,26 @@ class FracFocusCollector(Collector):
     ):
         if not isinstance(filelist, list):
             filelist = [filelist]
+
         for path in filelist:
-            if conf.COLLECTOR_FILE_PREFIX in path.name:
-                logger.info(f"Collecting file {path}")
-                with open(path) as f:
-                    csvreader = csv.DictReader(f)
-                    rows = []
-                    for idx, row in enumerate(csvreader):
-                        transformed = self.transform(row)
-                        rows.append(transformed)
+            logger.info(f"Collecting file {path}")
+            with open(path) as f:
+                csvreader = csv.DictReader(f)
+                rows = []
+                for idx, row in enumerate(csvreader):
+                    transformed = self.transform(row)
+                    rows.append(transformed)
 
-                        if idx % conf.COLLECTOR_WRITE_SIZE == 0:
-                            self.model.core_insert(
-                                rows,
-                                update_on_conflict=update_on_conflict,
-                                ignore_on_conflict=ignore_on_conflict,
-                            )
-                            rows = []
+                    if idx % conf.COLLECTOR_WRITE_SIZE == 0:
+                        self.model.core_insert(
+                            rows,
+                            update_on_conflict=update_on_conflict,
+                            ignore_on_conflict=ignore_on_conflict,
+                        )
+                        rows = []
 
-                    # persist leftovers
-                    self.model.core_insert(rows)
-            else:
-                logger.info(
-                    f"Ignoring file {path}. Filename doesn't match {conf.COLLECTOR_FILE_PREFIX}"
-                )
+                # persist leftovers
+                self.model.core_insert(rows)
 
 
 if __name__ == "__main__":
@@ -118,17 +114,6 @@ if __name__ == "__main__":
     ]
 
     paths
-    # c.collect(paths[0])
-
-    # self = c
-    # filelist = [paths[0]]
-
-    # f = open("/tmp/fracfocus/FracFocusRegistry_8.csv")
-    # csvreader = csv.DictReader(f)
-    # row = next(csvreader)
-    # f.close()
-
-    # row = c.transform(row)
 
     row = {
         "upload_key": "68acaa3e-c788-45fb-8f08-b1dc81ccf0ca",
@@ -158,7 +143,7 @@ if __name__ == "__main__":
         "is_water": None,
         "purpose_percent_hf_job": None,
         "purpose_ingredient_msds": None,
-        "ingredient_key": "75d23be9-819b-40b7-8b76-025781b58dce",
+        "ingredient_key": None,
         "ingredient_name": "Poly(oxy-1,2-ethanediyl),.alpha.-(4-nonylphenyl)-.omega.-hydroxy, branched",
         "cas_number": "127087-87-0",
         "percent_high_additive": 0.00484,
@@ -170,5 +155,3 @@ if __name__ == "__main__":
         "disclosure_key": "68acaa3e-c788-45fb-8f08-b1dc81ccf0ca",
         "api10": "4212738012",
     }
-    c.model.core_insert([row])
-    c.model.s.rollback()
