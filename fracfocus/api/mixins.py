@@ -165,12 +165,12 @@ class CoreMixin(object):
                     )
             except Exception as e:
                 logger.error(e)
-                import json
-                from util.jsontools import ObjectEncoder
+                # import json
+                # from util.jsontools import ObjectEncoder
 
-                with open(f"log/{datetime.now()}.json", "w") as f:
-                    chunk.append({"err": e})
-                    json.dump(chunk, f, cls=ObjectEncoder, indent=4)
+                # with open(f"log/{datetime.now()}.json", "w") as f:
+                #     chunk.append({"err": e})
+                #     json.dump(chunk, f, cls=ObjectEncoder, indent=4)
 
         return affected
 

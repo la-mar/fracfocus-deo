@@ -117,7 +117,7 @@ class BaseConfig:
 
     """ Logging """
     LOG_LEVEL = os.getenv("LOG_LEVEL", logging.INFO)
-    LOG_FORMAT = os.getenv("LOG_FORMAT", "funcname")
+    LOG_FORMAT = os.getenv("LOG_FORMAT", "json")
 
     """ --------------- Sqlalchemy --------------- """
 
@@ -229,7 +229,6 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CELERYD_PREFETCH_MULTIPLIER = 8
     CELERYD_CONCURRENCY = 12
-    LOG_FORMAT = "json"
 
 
 if __name__ == "__main__":

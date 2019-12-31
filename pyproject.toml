@@ -31,6 +31,8 @@ marshmallow-sqlalchemy = "^0.21.0"
 importlib-metadata = "<0.24,>=0.23"
 attrs = "^19.3.0"
 pyparsing = "^2.4.6"
+flask-debugtoolbar = "*"
+pandas = "^0.25.3"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
@@ -47,7 +49,7 @@ requests-mock = "*"
 redis = "^3.3.11"
 codecov = "^2.0.15"
 coverage = {version = "^5.0", extras = ["toml"]}
-flask-debugtoolbar = "*"
+
 
 [tool.poetry.scripts]
 fracfocus = "fracfocus.manage:main"

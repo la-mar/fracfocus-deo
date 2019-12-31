@@ -209,8 +209,8 @@ def config(level: int = None, formatter: str = None, logger: logging.Logger = No
         root_logger.removeHandler(root_logger.handlers[0])
     root_logger.addHandler(console_handler)
 
-    file_handler = logging.FileHandler("log/log.log")
-    root_logger.addHandler(file_handler)
+    # file_handler = logging.FileHandler("log/log.log")
+    # root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
 

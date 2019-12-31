@@ -228,7 +228,7 @@ for deployment in SERVICES:
         name=task,
         task_name=task,
         tags=TAGS,
-        # task_iam_role_arn=TASK_IAM_ROLE,
+        task_iam_role_arn=TASK_IAM_ROLE,
     )
 
     # pprint(cdef)

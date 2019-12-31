@@ -65,7 +65,7 @@ build: login
 	@echo "Building docker image: ${IMAGE_NAME}"
 	docker build  -f ${DOCKERFILE} ${CTX} -t ${IMAGE_NAME}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${COMMIT_HASH}
-	docker push ${IMAGE_NAME}:${COMMIT_HASH}
+	# docker push ${IMAGE_NAME}:${COMMIT_HASH}
 
 all:
 	make build login push
@@ -109,4 +109,6 @@ compose:
 secret-key:
 	python3 -c 'import secrets; print(secrets.token_urlsafe(256));'
 
+run-image:
+	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run collector
 

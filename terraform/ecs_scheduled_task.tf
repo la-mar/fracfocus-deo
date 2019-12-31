@@ -36,13 +36,13 @@ resource "aws_cloudwatch_event_rule" "scheduled_task" {
 }
 
 resource "aws_cloudwatch_event_target" "scheduled_task" {
-  target_id = "${var.service_name}_collector_scheduled_task_target"
+  target_id = "${var.service_name}-collector-scheduled-task-bi-monthly"
   rule      = aws_cloudwatch_event_rule.scheduled_task.name
   arn       = data.terraform_remote_state.collector_cluster.outputs.cluster_arn
   role_arn  = aws_iam_role.scheduled_task_role.arn
 
   ecs_target {
     task_count          = 1
-    task_definition_arn = data.aws_ecs_task_definition.collector.task_role_arn
+    task_definition_arn = "arn:aws:ecs:us-east-1:${data.aws_caller_identity.current.account_id}:task-definition/${var.service_name}-collector"
   }
 }
