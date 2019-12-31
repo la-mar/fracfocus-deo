@@ -5,7 +5,6 @@ from datetime import datetime
 import csv
 from pathlib import Path
 
-# import pandas as pd
 from flask_sqlalchemy import Model
 import requests
 

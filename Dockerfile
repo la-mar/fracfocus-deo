@@ -15,8 +15,8 @@ ENV PYTHONFAULTHANDLER=1 \
     POETRY_VIRTUALENVS_CREATE=false \
     POETRY_VERSION=1.0
 
-# ENV PYTHONPATH "/app:/app/ihs:${PYTHONPATH}"
-ENV PYTHONPATH=/app/ihs
+# ENV PYTHONPATH "/app:/app/fracfocus:${PYTHONPATH}"
+ENV PYTHONPATH=/app/fracfocus
 
 RUN pip install "poetry==$POETRY_VERSION"
 ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
@@ -28,7 +28,7 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml /app/
 
 # create placeholder source file
-RUN mkdir /app/ihs && touch /app/ihs/__init__.py
+RUN mkdir /app/fracfocus && touch /app/fracfocus/__init__.py
 
 # force symlinks
 RUN poetry install --no-dev --no-interaction

@@ -71,7 +71,7 @@ all:
 	make build login push
 	# make fracfocus-redis-deo build login push
 
-deploy: ssm-update
+deploy:
 	# Update SSM parameters from local dotenv and deploy a new version of the service to ECS
 	${eval AWS_ACCOUNT_ID=$(shell echo ${AWS_ACCOUNT_ID})}
 	@echo ${AWS_ACCOUNT_ID}

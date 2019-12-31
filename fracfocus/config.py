@@ -5,17 +5,10 @@ import socket
 import shutil
 
 from dotenv import load_dotenv
-import pandas as pd
 import tomlkit
 import yaml
 from attrdict import AttrDict
 from sqlalchemy.engine.url import URL
-
-""" Optional Pandas display settings"""
-pd.options.display.max_rows = None
-pd.set_option("display.float_format", lambda x: "%.2f" % x)
-pd.set_option("large_repr", "truncate")
-pd.set_option("precision", 2)
 
 _pg_aliases = ["postgres", "postgresql", "psycopg2", "psycopg2-binary"]
 _mssql_aliases = ["mssql", "sql server"]
