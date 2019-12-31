@@ -15,3 +15,7 @@ variable "service_name" {
 variable "service_port" {
   description = "Web service port"
 }
+
+variable "collector_schedule_expression" {
+  description = "Cron expression for collector scheduled task"
+}

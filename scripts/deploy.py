@@ -53,7 +53,18 @@ if not any([ENV, AWS_ACCOUNT_ID, SERVICE_NAME, IMAGE_NAME, CLUSTER_NAME]):
     raise ValueError("One or more environment variables are missing")
 
 
-SERVICES = [{"service_name": "fracfocus-web", "cluster_name": "ecs-web-cluster"}]
+SERVICES = [
+    {
+        "task_name": "fracfocus-web",
+        "cluster_name": "ecs-web-cluster",
+        "task_type": "service",
+    },
+    {
+        "task_name": "fracfocus-collector",
+        "cluster_name": "ecs-collector-cluster",
+        "task_type": "scheduled",
+    },
+]
 
 IMAGES = [
     {"name": SERVICE_NAME, "dockerfile": "Dockerfile", "build_context": "."},
@@ -80,7 +91,7 @@ print("-" * 30 + "\n\n")
 
 def get_task_definition(
     name: str,
-    service_name: str,
+    task_name: str,
     tags: list = [],
     task_iam_role_arn: str = "ecsTaskExecutionRole",
 ):
@@ -107,8 +118,25 @@ def get_task_definition(
                 },
             ],
             "executionRoleArn": "ecsTaskExecutionRole",
-            "family": f"{service_name}",
+            "family": task_name,
             "networkMode": "awsvpc",
+            "taskRoleArn": task_iam_role_arn,
+            "tags": tags,
+        },
+        "fracfocus-collector": {
+            "containerDefinitions": [
+                {
+                    "name": "fracfocus-collector",
+                    "command": ["fracfocus", "run", "collector"],
+                    "memoryReservation": 256,
+                    "cpu": 256,
+                    "image": image,
+                    "essential": True,
+                },
+            ],
+            "executionRoleArn": "ecsTaskExecutionRole",
+            "family": task_name,
+            "networkMode": "bridge",
             "taskRoleArn": task_iam_role_arn,
             "tags": tags,
         },
@@ -188,16 +216,17 @@ results = []
 
 
 for deployment in SERVICES:
-    service = deployment["service_name"]
+    task = deployment["task_name"]
+    task_type = deployment["task_type"]
     cluster = deployment["cluster_name"]
-    s = f"{service:>20}:"
+    s = f"{task:>20}:"
     try:
-        prev_rev_num = client.get_latest_revision(service)
+        prev_rev_num = client.get_latest_revision(task)
     except:
         prev_rev_num = "?"
     cdef = get_task_definition(
-        name=service,
-        service_name=service,
+        name=task,
+        task_name=task,
         tags=TAGS,
         # task_iam_role_arn=TASK_IAM_ROLE,
     )
@@ -205,17 +234,21 @@ for deployment in SERVICES:
     # pprint(cdef)
     client.ecs.register_task_definition(**cdef)
 
-    rev_num = client.get_latest_revision(service)
+    rev_num = client.get_latest_revision(task)
     s += "\t" + f"updated revision: {prev_rev_num} -> {rev_num}"
-    results.append((service, cluster, prev_rev_num, rev_num))
+    results.append((task, task_type, cluster, prev_rev_num, rev_num))
     print(s)
 
-for service, cluster, prev_rev_num, rev_num in results:
-    response = client.ecs.update_service(
-        cluster=cluster,
-        service=service,
-        forceNewDeployment=True,
-        taskDefinition=f"{service}:{rev_num}",
-    )
-    print(f"{service:>20}: updated service on cluster {cluster}")
+for task, task_type, cluster, prev_rev_num, rev_num in results:
+    if task_type == "service":
+        response = client.ecs.update_service(
+            cluster=cluster,
+            service=task,
+            forceNewDeployment=True,
+            taskDefinition=f"{task}:{rev_num}",
+        )
+        print(f"{task:>20}: updated service on cluster {cluster}")
+    elif task_type == "scheduled":
+        pass
+
 print("\n\n")

@@ -98,16 +98,6 @@ resource "aws_iam_role_policy_attachment" "attach_ecs_service_policy_to_task_rol
 }
 
 data "aws_iam_policy_document" "task_policy" {
-  statement {
-    sid = "0" # task_access_sqs
-    actions = [
-      "sqs:*",
-    ]
-
-    resources = [
-      "*"
-    ]
-  }
 
   statement {
     sid = "1" # task_access_secrets
