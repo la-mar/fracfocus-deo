@@ -33,7 +33,7 @@ jobs:
 
       - run:
           name: lint
-          command: poetry run pylint iwell --exit-zero --rcfile=.pylintrc
+          command: poetry run pylint fracfocus --exit-zero --rcfile=.pylintrc
 
       - run:
           name: CodeClimate before-build
@@ -44,7 +44,7 @@ jobs:
 
       - run:
           name: Run python tests
-          command: poetry run pytest --cov iwell tests/ --cov-report xml:./coverage/python/coverage.xml --log-level info --log-cli-level debug
+          command: poetry run pytest --cov fracfocus tests/ --cov-report xml:./coverage/python/coverage.xml --log-level info --log-cli-level debug
 
       - run:
           name: CodeClimate combine and upload coverage
@@ -69,10 +69,10 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: driftwood/iwell
+          image: driftwood/fracfocus
           tag: $(echo ${CIRCLE_SHA1} | cut -c -7),dev
       - docker/push:
-          image: driftwood/iwell
+          image: driftwood/fracfocus
           tag: $(echo ${CIRCLE_SHA1} | cut -c -7),dev
 
   # publish-image:
@@ -82,7 +82,7 @@ jobs:
   #     - checkout
   #     - docker/check
   #     - docker/publish:
-  #         image: driftwood/iwell
+  #         image: driftwood/fracfocus
   #         tag: latest
 
   publish-github-release:
@@ -137,7 +137,7 @@ workflows:
           filters:
             <<: *on_tags_only
       - docker/publish:
-          image: driftwood/iwell
+          image: driftwood/fracfocus
           tag: latest, ${CIRCLE_TAG}
           requires:
             - run-tests
