@@ -27,6 +27,8 @@ tomlkit = "^0.5.8"
 logutils = "^0.3.5"
 datadog = "^0.33.0"
 json_log_formatter = "^0.2.0"
+gunicorn = "^20.0.4"
+marshmallow-sqlalchemy = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }

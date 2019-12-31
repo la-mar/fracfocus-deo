@@ -2,10 +2,12 @@ endpoints:
   registry:
     enabled: true
     model: api.models.Registry
+    # path: /wells
+    # options:
+    #   - since
     mappings:
       aliases:
         pKey: pkey
-        UploadKey: upload_key
         JobStartDate: job_start_date
         JobEndDate: job_end_date
         APINumber: api14
@@ -26,17 +28,16 @@ endpoints:
         IndianWell: is_indian_well
         Source: source
         DTMOD: dtmod
-        PurposeKey: purpose_key
-        TradeName: trade_name
-        Supplier: supplier
-        Purpose: purpose
-        SystemApproach: system_approach
-        IsWater: is_water
-        PurposePercentHFJob: purpose_percent_hf_job
-        PurposeIngredientMSDS: purpose_ingredient_msds
-        IngredientKey: ingredient_key
+    exclude: []
+  ingredients:
+    enabled: true
+    model: api.models.Ingredients
+    mappings:
+      aliases:
+        pKey: pkey
+        pKeyPurpose: pkey_purpose
+        pKeyDisclosure: pkey_registry
         IngredientName: ingredient_name
-        pKeyDisclosure: registry_key
         CASNumber: cas_number
         PercentHighAdditive: percent_high_additive
         PercentHFJob: percent_hf_job
@@ -44,4 +45,19 @@ endpoints:
         IngredientMSDS: ingredient_msds
         MassIngredient: ingredient_mass
         ClaimantCompany: claimant_company
-        DisclosureKey: disclosure_key
+    exclude: []
+purpose:
+  enabled: true
+  model: api.models.Purpose
+  mappings:
+    alias:
+      pKey: pkey
+      pKeyRegistryUpload: pkey_registry
+      TradeName: trade_name
+      Supplier: supplier
+      Purpose: purpose
+      SystemApproach: system_approach
+      IsWater: is_water
+      PercentHFJob: percent_hf_job
+      IngredientMSDS: ingredient_msds
+  exclude: []

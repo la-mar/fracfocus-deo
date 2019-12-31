@@ -9,11 +9,11 @@ import click
 from flask.cli import FlaskGroup, AppGroup
 
 from api.models import *
-import collector.tasks
 from fracfocus import create_app, db
 import loggers
 from config import get_active_config
-from collector.endpoint import load_from_config
+from collector import Endpoint, FracFocusCollector, ZipDownloader
+import util
 
 logger = logging.getLogger()
 
@@ -86,39 +86,53 @@ def ipython_embed():
     IPython.embed(banner1=banner, user_ns=ctx)
 
 
-@cli.command()
-@click.argument("endpoint")
+@run_cli.command()
 @click.option(
-    "--since",
-    "-s",
-    type=click.DateTime(formats=["%Y-%m-%d"]),
-    help="Set to download records updated after the specified time",
-)
-@click.option(
-    "from_",
-    "--from",
-    "-f",
-    type=click.DateTime(formats=["%Y-%m-%d"]),
-    help="Set to download records between the specified time and now",
-)
-@click.option(
-    "--to",
-    "-t",
-    type=click.DateTime(formats=["%Y-%m-%d"]),
-    help="Set to download records occuring before the specified time",
-)
-@click.option(
-    "--verbose",
-    "-v",
-    help="Set the verbosity level. A higher verbosity level will generate more output during the process' execution. Repeat the flag to increase the verbosity level. (ex. -vvv)",
+    "update_on_conflict",
+    "--update-on-conflict",
+    "-u",
+    help="Prevent updating records that already exist",
     show_default=True,
-    count=True,
-    default=2,
+    default=True,
 )
-def sync_endpoint(endpoint, since, from_, to, verbose):
-    "Run a one-off task to synchronize an endpoint"
-    print(conf)
-    collector.tasks._sync_endpoint(endpoint, since=since, start=from_, end=to)
+@click.option(
+    "ignore_on_conflict",
+    "--ignore-conflict",
+    "-i",
+    help="Ignore records that already exist",
+    show_default=True,
+    is_flag=True,
+)
+@click.option(
+    "use_existing",
+    "--use-existing",
+    "-e",
+    help=f"Use previously downloaded files (must be located at {conf.COLLECTOR_DOWNLOAD_PATH})",
+    is_flag=True,
+)
+def collector(update_on_conflict, ignore_on_conflict, use_existing):
+    "Run a one-off task to synchronize from the fracfocus data source"
+    logger.info(conf)
+
+    endpoints = Endpoint.load_from_config(conf)
+    coll = FracFocusCollector(endpoints["registry"])
+    url = util.urljoin(conf.COLLECTOR_BASE_URL, conf.COLLECTOR_URL_PATH)
+    if not use_existing:
+        downloader = ZipDownloader(url)
+        req = downloader.get()
+        filelist = downloader.unpack(req).paths
+    else:
+        downloader = ZipDownloader.from_existing()
+        filelist = downloader.paths
+
+    coll.collect(filelist, update_on_conflict, ignore_on_conflict)
+
+
+@run_cli.command(context_settings=dict(ignore_unknown_options=True))
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def web(args):
+    cmd = ["gunicorn", "wsgi",] + list(args)
+    subprocess.call(cmd)
 
 
 @cli.command()
@@ -128,43 +142,11 @@ def endpoints():
         click.secho(tpl.format(name=f"{name}:", value=str(ep)))
 
 
-@run_cli.command()
-@click.argument("celery_args", nargs=-1, type=click.UNPROCESSED)
-def worker(celery_args):
-    # from celery_queue.worker import celery
-
-    cmd = ["celery", "-E", "-A", "celery_queue.worker:celery", "worker",] + list(
-        celery_args
-    )
-    subprocess.call(cmd)
-
-
-@run_cli.command(context_settings=dict(ignore_unknown_options=True))
-@click.argument("celery_args", nargs=-1, type=click.UNPROCESSED)
-def cron(celery_args):
-    # from celery_queue.worker import celery
-
-    cmd = ["celery", "-A", "celery_queue.worker:celery", "beat",] + list(celery_args)
-    subprocess.call(cmd)
-
-
-@run_cli.command(context_settings=dict(ignore_unknown_options=True))
-@click.argument("celery_args", nargs=-1, type=click.UNPROCESSED)
-def monitor(celery_args):
-    # from celery_queue.worker import celery
-
-    cmd = ["celery", "-A", "celery_queue.worker:celery", "flower",] + list(celery_args)
-    subprocess.call(cmd)
-
-
-@test_cli.command()
-def sentry():
-    from loggers import load_sentry
-
-    conf.SENTRY_ENABLED = True
-    conf.SENTRY_EVENT_LEVEL = 10
-    load_sentry()
-    logger.error("Sentry Integration Test")
+@cli.command()
+def recreate_db():
+    db.drop_all()
+    db.create_all()
+    db.session.commit()
 
 
 def main(argv=sys.argv):
@@ -178,14 +160,6 @@ def main(argv=sys.argv):
 
     cli()
     return 0
-
-
-@cli.command()
-def recreate_db():
-    # with app.app_context().push():
-    db.drop_all()
-    db.create_all()
-    db.session.commit()
 
 
 # @cli.command()
@@ -212,9 +186,7 @@ def recreate_db():
 #         COV.erase()
 #         return 0
 #     sys.exit(result)
-
 cli.add_command(run_cli)
-cli.add_command(test_cli)
 
 if __name__ == "__main__":
     cli()

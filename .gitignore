@@ -9,6 +9,7 @@ __pycache__/
 *$py.class
 .env*
 *coverage
+log/
 
 # C extensions
 *.so

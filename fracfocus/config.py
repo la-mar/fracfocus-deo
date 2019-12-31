@@ -24,13 +24,20 @@ APP_SETTINGS = os.getenv("APP_SETTINGS", "fracfocus.config.DevelopmentConfig")
 FLASK_APP = os.getenv("FLASK_APP", "fracfocus.manage.py")
 
 
+def abs_path(path: str, filename: str) -> str:
+    return os.path.abspath(os.path.join(path, filename))
+
+
 def make_config_path(path: str, filename: str) -> str:
     return os.path.abspath(os.path.join(path, filename))
 
 
 def load_config(path: str) -> AttrDict:
-    with open(path) as f:
-        return AttrDict(yaml.safe_load(f))
+    try:
+        with open(path) as f:
+            return AttrDict(yaml.safe_load(f))
+    except FileNotFoundError as fe:
+        print(f"Failed to load configuration: {fe}")
 
 
 def get_active_config() -> AttrDict:
@@ -97,11 +104,23 @@ class BaseConfig:
     DATADOG_API_KEY = os.getenv("DATADOG_API_KEY", None)
     DATADOG_APP_KEY = os.getenv("DATADOG_APP_KEY", None)
 
-    """ Config """
+    """ General """
     CONFIG_BASEPATH = "./config"
+
+    """ Collector """
     COLLECTOR_CONFIG_PATH = make_config_path(CONFIG_BASEPATH, "collector.yaml")
     COLLECTOR_CONFIG = load_config(COLLECTOR_CONFIG_PATH)
-    COLLECTOR_BASE_URL = os.getenv("FRACFOCUS_BASE_URL", None)
+    COLLECTOR_BASE_URL = os.getenv("FRACFOCUS_BASE_URL", "http://fracfocusdata.org")
+    COLLECTOR_URL_PATH = os.getenv(
+        "FRACFOCUS_URL_PATH", "/digitaldownload/FracFocusCSV.zip"
+    )
+    COLLECTOR_DOWNLOAD_PATH = os.getenv("FRACFOCUS_DOWNLOAD_PATH", "/tmp/fracfocus")
+    COLLECTOR_WRITE_SIZE = int(os.getenv("FRACFOCUS_WRITE_SIZE", "10000"))
+    COLLECTOR_FILE_PREFIX = os.getenv("FRACFOCUS_FILE_PREFIX", "FracFocusRegistry")
+
+    """ Parser """
+    PARSER_CONFIG_PATH = abs_path(CONFIG_BASEPATH, "parsers.yaml")
+    PARSER_CONFIG = load_config(PARSER_CONFIG_PATH)
 
     """ Logging """
     LOG_LEVEL = os.getenv("LOG_LEVEL", logging.INFO)
@@ -133,20 +152,12 @@ class BaseConfig:
         return [x for x in dir(self) if not x.startswith("_")]
 
     @property
-    def api_params(self):
-        return {
-            key.lower().replace("api_", ""): getattr(self, key)
-            for key in dir(self)
-            if key.startswith("API_")
-        }
+    def collector_params(self):
+        return self.get_params_by_prefix("collector")
 
     @property
     def datadog_params(self):
-        return {
-            key.lower().replace("datadog_", ""): getattr(self, key)
-            for key in dir(self)
-            if key.startswith("DATADOG_")
-        }
+        return self.get_params_by_prefix("datadog")
 
     @property
     def endpoints(self):
@@ -165,6 +176,26 @@ class BaseConfig:
         )
         string += tpl.format(name="collector:", value=self.COLLECTOR_BASE_URL)
         return hr + string + hr
+
+    def get_params_by_prefix(self, kw: str):
+        """ Return all parameters that begin with the given string.
+
+            Example: kw = "collector"
+
+                Returns:
+                    {
+                        "base_url": "example.com/api",
+                        "path": "path/to/data",
+                        "endpoints": {...}
+                    }
+        """
+        if not kw.endswith("_"):
+            kw = kw + "_"
+        return {
+            key.lower().replace(kw.lower(), ""): getattr(self, key)
+            for key in dir(self)
+            if key.startswith(kw.upper())
+        }
 
 
 class DevelopmentConfig(BaseConfig):
