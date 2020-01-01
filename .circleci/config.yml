@@ -33,7 +33,7 @@ jobs:
 
       - run:
           name: lint
-          command: poetry run pylint fracfocus --exit-zero --rcfile=.pylintrc
+          command: poetry run pylint fracfocus --exit-zero
 
       - run:
           name: CodeClimate before-build
