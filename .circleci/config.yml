@@ -116,12 +116,12 @@ workflows:
   version: 2.1
 
   # The run-tests we will run EVERYTIME a piece of code changes
-  test-and-build:
-    jobs:
-      - run-tests:
-          context: global
-      - build-image:
-          context: global
+  # test-and-build:
+  #   jobs:
+  #     - run-tests:
+  #         context: global
+  #     - build-image:
+  #         context: global
 
   # The deployment workflow publishes the package
   deployment:
