@@ -14,6 +14,7 @@ from sqlalchemy.ext.compiler import compiles
 
 # from sqlalchemy.sql.expression import Insert
 from sqlalchemy.dialects.postgresql.dml import Insert
+from sqlalchemy.sql import func
 
 import util.deco
 from fracfocus import db

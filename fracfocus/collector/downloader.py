@@ -4,16 +4,14 @@ import requests
 import zipfile
 import io
 import os
-import sys
 import logging
 from pathlib import Path
 import itertools
 from timeit import default_timer as timer
-import csv
 import re
 
 from config import get_active_config
-from util import urljoin, hf_size
+from util import hf_size
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,9 @@ class FileDownloader:
         size = self.get_file_size(r)
 
         logger.info(
-            f"Download successful (download size: {hf_size(size or 0)}, download_time: {exc_time}s)",
+            "Download successful (download size: %s, download_time: %ss)",
+            hf_size(size or 0),
+            exc_time,
             extra={"download_bytes": size, "download_seconds": exc_time},
         )
         return r
@@ -117,4 +117,3 @@ if __name__ == "__main__":
     # fp = d.paths[0]
     z = ZipDownloader.from_existing()
     z.paths
-

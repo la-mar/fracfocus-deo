@@ -49,6 +49,7 @@ requests-mock = "*"
 redis = "^3.3.11"
 codecov = "^2.0.15"
 coverage = {version = "^5.0", extras = ["toml"]}
+flake8 = "^3.7.9"
 
 
 [tool.poetry.scripts]
