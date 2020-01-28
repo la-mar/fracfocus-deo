@@ -102,7 +102,7 @@ def get_task_definition(
                         "fracfocus",
                         "run",
                         "web",
-                        "-b 0.0.0.0:9091",
+                        "-b 0.0.0.0:80",
                         "--statsd-host=localhost:8125",
                     ],
                     "memoryReservation": 128,
@@ -110,7 +110,7 @@ def get_task_definition(
                     "image": image,
                     "essential": True,
                     "portMappings": [
-                        {"hostPort": 9091, "containerPort": 9091, "protocol": "tcp"}
+                        {"hostPort": 80, "containerPort": 80, "protocol": "tcp"}
                     ],
                 },
             ],

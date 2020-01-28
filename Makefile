@@ -5,6 +5,7 @@ AWS_ACCOUNT_ID:=$$(aws-vault exec ${ENV} -- aws sts get-caller-identity | jq .Ac
 IMAGE_NAME:=driftwood/fracfocus
 DOCKERFILE:=Dockerfile
 ENV:=prod
+APP_VERSION ?= $$(grep -o '\([0-9]\+.[0-9]\+.[0-9]\+\)' pyproject.toml | head -n1)
 
 cc-expand:
 	# show expanded configuration
