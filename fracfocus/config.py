@@ -127,8 +127,8 @@ class BaseConfig:
     DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
     DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
     DATABASE_PORT = os.getenv("DATABASE_PORT", get_default_port(DATABASE_DRIVER))
-    DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA", get_default_schema(DATABASE_DRIVER))
-    DATABASE_NAME = os.getenv("DATABASE_NAME", "postgres")
+    DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA", "fracfocus")
+    DATABASE_NAME = os.getenv("DATABASE_NAME", "fracfocus")
     DATABASE_URL_PARAMS = {
         "drivername": DATABASE_DRIVER,
         "username": DATABASE_USERNAME,
