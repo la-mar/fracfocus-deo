@@ -10,7 +10,7 @@ from api.models import Registry
 
 logger = logging.getLogger(__name__)
 
-comp_blueprint = Blueprint("completions", __name__, url_prefix="/completions")
+comp_blueprint = Blueprint("completions", __name__)
 api = Api(comp_blueprint)
 
 
@@ -68,3 +68,6 @@ if __name__ == "__main__":
     app.app_context().push()
     conf = get_active_config()
 
+    api10s = ["4246140916"]
+    Registry.completion_calcs(api10s=api10s)
+    Registry.query.filter(Registry.api10.in_(api10s)).all()
