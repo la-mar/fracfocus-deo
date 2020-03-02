@@ -66,6 +66,7 @@ build:
 	docker build  -f Dockerfile . -t ${IMAGE_NAME}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${COMMIT_HASH}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${APP_VERSION}
+	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:dev
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:latest
 
 
@@ -75,6 +76,7 @@ build-with-chamber:
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-${COMMIT_HASH}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-${APP_VERSION}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-latest
+	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-dev
 
 build-all: build-with-chamber build
 
