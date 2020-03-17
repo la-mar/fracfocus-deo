@@ -19,11 +19,12 @@ The script does the following:
 # pylint: disable=dangerous-default-value,too-many-arguments,missing-function-docstring
 
 import os
-from typing import List
+from typing import List, Dict
 
 import boto3
 import tomlkit
-from dotenv import dotenv_values
+
+# from dotenv import dotenv_values
 
 
 def get_project_meta() -> dict:
@@ -48,6 +49,7 @@ IMAGE_TAG: str = os.getenv("IMAGE_TAG")  # type: ignore
 IMAGE_NAME: str = f"{os.getenv('IMAGE_NAME')}{':' if IMAGE_TAG else ''}{IMAGE_TAG or ''}"
 
 CLUSTER_NAME = os.getenv("ECS_CLUSTER")  # type: ignore
+CLUSTER_ARN = f"arn:aws:ecs:us-east-1:{AWS_ACCOUNT_ID}:cluster/{CLUSTER_NAME}"
 TASK_IAM_ROLE = f"arn:aws:iam::{AWS_ACCOUNT_ID}:role/{project}-task-role"
 
 if not any([ENV, AWS_ACCOUNT_ID, IMAGE_NAME, CLUSTER_NAME]):
@@ -73,6 +75,14 @@ TAGS = [
     {"key": "environment", "value": ENV},
     {"key": "terraform", "value": "true"},
 ]
+
+TASKS: Dict[str, Dict] = {
+    "fracfocus-collector": {
+        "service": "fracfocus-bimonthly",
+        "command": "fracfocus run collector",
+        "rule": "schedule-fracfocus-bi-monthly",
+    },
+}
 
 
 BUILD = False
@@ -208,6 +218,9 @@ class AWSClient:
 
 client = AWSClient()
 
+events = client.get_client("events")
+target_id = 0
+targets = []
 
 results = []
 
@@ -219,21 +232,22 @@ for deployment in SERVICES:
     s = f"{task:>20}:"
     try:
         prev_rev_num = client.get_latest_revision(task)
-    except:
+    except Exception:
         prev_rev_num = "?"
     cdef = get_task_definition(
         name=task, task_name=task, tags=TAGS, task_iam_role_arn=TASK_IAM_ROLE,
     )
 
-    # pprint(cdef)
-    client.ecs.register_task_definition(**cdef)
+    task_def_arn = client.ecs.register_task_definition(**cdef)["taskDefinition"][
+        "taskDefinitionArn"
+    ]
 
     rev_num = client.get_latest_revision(task)
     s += "\t" + f"updated revision: {prev_rev_num} -> {rev_num}"
-    results.append((task, task_type, cluster, prev_rev_num, rev_num))
+    results.append((task, task_type, cluster, prev_rev_num, rev_num, task_def_arn))
     print(s)
 
-for task, task_type, cluster, prev_rev_num, rev_num in results:
+for task, task_type, cluster, prev_rev_num, rev_num, task_def_arn in results:
     if task_type == "service":
         response = client.ecs.update_service(
             cluster=cluster,
@@ -243,6 +257,27 @@ for task, task_type, cluster, prev_rev_num, rev_num in results:
         )
         print(f"{task:>20}: updated service on cluster {cluster}")
     elif task_type == "scheduled":
-        pass
+        task_def = TASKS[task]
+        service = task_def["service"]
+        rule = task_def["rule"]
+        task_count = 1
+        targets = [
+            {
+                "Id": str(target_id),
+                "Arn": CLUSTER_ARN,
+                "RoleArn": f"arn:aws:iam::{AWS_ACCOUNT_ID}:role/ecsEventsRole",
+                "EcsParameters": {
+                    "TaskDefinitionArn": task_def_arn,
+                    "TaskCount": task_count,
+                },
+            }
+        ]
+        response = events.put_targets(Rule=rule, Targets=targets)
+        print("\t" + f"created event: {cluster}/{service} - {rule}")
+        target_id += 1
+
+
+print("\n\n")
+
 
 print("\n\n")

@@ -106,7 +106,6 @@ deploy:
 redeploy:
 	aws ecs update-service --cluster ${ECS_CLUSTER} --service ${SERVICE_NAME} --force-new-deployment --profile ${ENV}
 
-
 ssm-export:
 	# Export all SSM parameters associated with this service to json
 	aws-vault exec ${ENV} -- chamber export ${SERVICE_NAME} | jq
@@ -138,5 +137,11 @@ secret-key:
 docker-run-collector:
 	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run collector
 
+docker-run-collector-local:
+	docker run --env-file .env.compose driftwood/fracfocus fracfocus run collector
+
 docker-run-web:
 	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run web
+
+put-schedule-rule:
+	aws events put-rule --schedule-expression "cron(0 21 2,16 * ? *)" --name schedule-fracfocus-bi-monthly
