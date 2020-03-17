@@ -78,7 +78,10 @@ class FracFocusCollector(Collector):
                 rows = []
                 for idx, row in enumerate(csvreader):
                     transformed = self.transform(row)
-                    rows.append(transformed)
+                    if transformed.get("upload_key") and transformed.get(
+                        "ingredient_key"
+                    ):
+                        rows.append(transformed)
 
                     if idx % conf.COLLECTOR_WRITE_SIZE == 0:
                         self.model.core_insert(
