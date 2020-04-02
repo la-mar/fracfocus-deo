@@ -14,50 +14,77 @@ comp_blueprint = Blueprint("completions", __name__)
 api = Api(comp_blueprint)
 
 
-class CompletionResource(Resource):
-    schema = schemas.CompletionParameterSchema
+class Completion10(Resource):
+    schema = schemas.CompletionParameterSchema(many=True)
 
     def get(self, api10: str) -> Tuple[Dict, int]:
+        api10 = api10[:10]
+
         if len(api10) != 10:
-            return {
-                "status": f"api should have a length of 10. The passed parameter has a length of {len(api10)} ({api10})."
-            }
+            msg = f"api10 should have a length of 10. The passed parameter has a length of {len(api10)} ({api10})."  # noqa
+            return (
+                {"status": msg},
+                400,
+            )
         result = Registry.completion_calcs(api10s=[api10])
-        return self.schema.dump(result), 200
+        return {"data": self.schema.dump(result), "status": "success"}, 200
 
 
-class CompletionListResource(Resource):
-    schema = schemas.CompletionParameterSchema
+class Completion14(Resource):
+    schema = schemas.CompletionParameterSchema(many=True)
+
+    def get(self, api14: str) -> Tuple[Dict, int]:
+
+        if len(api14) != 14:
+            msg = f"api14 should have a length of 14. The passed parameter has a length of {len(api14)} ({api14})."  # noqa
+            return (
+                {"status": msg},
+                400,
+            )
+        result = Registry.completion_calcs(api14s=[api14])
+        return {"data": self.schema.dump(result), "status": "success"}, 200
+
+
+class Completions(Resource):
+    schema = schemas.CompletionParameterSchema(many=True)
 
     def get(self) -> Tuple[Dict, int]:  # type: ignore
         api10 = request.args.get("api10")
+        api14 = request.args.get("api14")
         if api10:
-            result = Registry.completion_calcs(api10s=str(api10).split(","))
-            return self.schema.dump(result), 200
+            id_var = "api10s"
+            ids = [x[:10] for x in api10.split(",")]
+        elif api14:
+            id_var = "api14s"
+            ids = [x[:14] for x in api14.split(",")]
         else:
             return {"status": "missing_argument"}, 400
 
-
-class Completion(CompletionResource):
-    """ All data for a completion """
-
-    schema = schemas.CompletionParameterSchema(many=True)
+        result = Registry.completion_calcs(**{id_var: ids})
+        return {"data": self.schema.dump(result), "status": "success"}, 200
 
 
-class Completions(CompletionListResource):
-    """ All data for a list of completions """
+# class Completion(CompletionResource):
+#     """ All data for a completion """
 
-    schema = schemas.CompletionParameterSchema(many=True)
+#     schema = schemas.CompletionParameterSchema(many=True)
 
 
-class Test(CompletionResource):
+# class Completions(CompletionListResource):
+#     """ All data for a list of completions """
+
+#     schema = schemas.CompletionParameterSchema(many=True)
+
+
+class Test(Completion10):
     def get(self) -> Tuple[Dict, int]:  # type: ignore
         return request.args, 200
 
 
 api.add_resource(Test, "/test")
 api.add_resource(Completions, "/")
-api.add_resource(Completion, "/<api10>")
+api.add_resource(Completion10, "/api10/<api10>")
+api.add_resource(Completion14, "/api14/<api14>")
 
 
 if __name__ == "__main__":

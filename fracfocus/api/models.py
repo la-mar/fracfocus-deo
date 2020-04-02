@@ -18,7 +18,7 @@ PROPPANT_REGEX = "sand|silica|propp|mesh"
 
 
 class Registry(CoreMixin, db.Model):
-    # pylint: disable=no-member
+    # ref: https://fracfocus.org/welcome/how-read-fracturing-record
     __tablename__ = "registry"
 
     upload_key = db.Column(UUID(as_uuid=True), primary_key=True)
@@ -55,7 +55,7 @@ class Registry(CoreMixin, db.Model):
     ingredient_name = db.Column(db.String())
     cas_number = db.Column(db.String())
     percent_high_additive = db.Column(db.Float())
-    percent_hf_job = db.Column(db.Float())
+    percent_hf_job = db.Column(db.Float())  # hf = hyraulic frac
     ingredient_comment = db.Column(db.String())
     ingredient_msds = db.Column(db.Boolean(), default=False)
     ingredient_mass = db.Column(db.BigInteger())
@@ -71,18 +71,29 @@ class Registry(CoreMixin, db.Model):
 
     @classmethod
     def completion_calcs(
-        cls, api10s: List[str], stmt_only: bool = False
+        cls, api10s: List[str] = None, api14s: List[str] = None, stmt_only: bool = False
     ) -> List[Dict[str, Union[str, int, float]]]:
+
+        if api10s:
+            id_var = getattr(cls, "api10")
+            ids = api10s
+        elif api14s:
+            id_var = getattr(cls, "api14")
+            ids = api14s
+        else:
+            raise ValueError(f"One of [api10, api14] must be specified")
+
         agg = (
             cls.query.with_entities(
-                cls.api10,
+                id_var,
                 func.max(cls.total_base_water_volume).label("total_base_water_volume"),
                 func.sum(cls.ingredient_mass).cast(Integer).label("ingredient_mass"),
-                (func.sum(cls.percent_hf_job)).label("hf_job_pct"),
+                func.sum(cls.percent_hf_job).label("hf_job_pct"),
+                func.max(cls.updated_at).label("updated_at"),
             )
             .filter(cls.ingredient_name.op("~*")(PROPPANT_REGEX))
-            .filter(cls.api10.in_(api10s))
-            .group_by(cls.api10)
+            .filter(id_var.in_(ids))
+            .group_by(id_var)
             .subquery()
         )
 
