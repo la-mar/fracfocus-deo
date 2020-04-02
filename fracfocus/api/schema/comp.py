@@ -10,8 +10,8 @@ from api.schema.validators import length_is_10, length_is_14
 
 
 class CompletionParameterSchema(Schema):
-    class Meta:
-        ordered = True
+    # class Meta:
+    #     ordered = True
 
     api10 = fields.Str(required=True, validate=length_is_10)
     total_base_water_volume = fields.Int()
@@ -20,13 +20,16 @@ class CompletionParameterSchema(Schema):
     water_mass = fields.Int()
     prop_mass = fields.Int()
     mass_diff_pct = fields.Float()
-    updated_at = fields.Date()
+    provider = fields.Str()
+    provider_last_update_at = fields.DateTime()
 
     @post_dump
     def transform(self, data: Dict, **kwargs) -> Dict:
         data["hf_job_pct"] = self.round_field(data.get("hf_job_pct"))
         data["mass_diff_pct"] = self.round_field(data.get("mass_diff_pct"))
         data["provider"] = "FracFocus"
+        data["provider_last_update_at"] = data.get("updated_at")
+
         return data
 
     def round_field(self, value: Union[float, None], n: int = 2) -> Optional[float]:
