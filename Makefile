@@ -97,7 +97,8 @@ push-version:
 	docker push ${IMAGE_NAME}:chamber-${APP_VERSION}
 
 all:
-	make build login push
+	make build-all push-all
+
 	# make fracfocus-redis-deo build login push
 
 deploy:

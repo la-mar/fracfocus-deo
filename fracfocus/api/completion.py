@@ -14,6 +14,23 @@ comp_blueprint = Blueprint("completions", __name__)
 api = Api(comp_blueprint)
 
 
+class Completion(Resource):
+    schema = schemas.CompletionParameterSchema(many=True)
+
+    def get(self, api: str) -> Tuple[Dict, int]:
+        if len(api) == 10:
+            result = Registry.completion_calcs(api10s=[api])
+        elif len(api) == 14:
+            result = Registry.completion_calcs(api14s=[api])
+        else:
+            msg = f"api should have a length of either 10 or 14. The passed parameter has a length of {len(api)} ({api})."  # noqa
+            return (
+                {"status": msg},
+                400,
+            )
+        return {"data": self.schema.dump(result), "status": "success"}, 200
+
+
 class Completion10(Resource):
     schema = schemas.CompletionParameterSchema(many=True)
 
@@ -83,6 +100,7 @@ class Test(Completion10):
 
 api.add_resource(Test, "/test")
 api.add_resource(Completions, "/")
+api.add_resource(Completion, "/<api>")
 api.add_resource(Completion10, "/api10/<api10>")
 api.add_resource(Completion14, "/api14/<api14>")
 
