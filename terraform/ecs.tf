@@ -41,7 +41,7 @@ resource "aws_ecs_service" "web" {
     type  = "spread"
     field = "instanceId"
   }
-  desired_count           = 1
+  desired_count           = 2
   enable_ecs_managed_tags = true
   propagate_tags          = "TASK_DEFINITION"
   tags                    = local.tags
