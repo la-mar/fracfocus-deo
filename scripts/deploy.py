@@ -108,13 +108,7 @@ def get_task_definition(
             "containerDefinitions": [
                 {
                     "name": "fracfocus-web",
-                    "command": [
-                        "fracfocus",
-                        "run",
-                        "web",
-                        "-b 0.0.0.0:80",
-                        "--statsd-host=localhost:8125",
-                    ],
+                    "command": ["fracfocus", "run", "web", "-b 0.0.0.0:80"],
                     "memoryReservation": 128,
                     "cpu": 256,
                     "image": image,
