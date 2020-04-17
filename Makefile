@@ -104,8 +104,8 @@ all:
 deploy:
 	aws-vault exec ${ENV} -- poetry run python scripts/deploy.py
 
-redeploy:
-	aws ecs update-service --cluster ${ECS_CLUSTER} --service ${SERVICE_NAME} --force-new-deployment --profile ${ENV}
+redeploy-web:
+	aws ecs update-service --cluster ${ECS_CLUSTER} --service fracfocus-web --force-new-deployment --profile ${ENV}
 
 ssm-export:
 	# Export all SSM parameters associated with this service to json
