@@ -75,17 +75,18 @@ class Registry(CoreMixin, db.Model):
     ) -> List[Dict[str, Union[str, int, float]]]:
 
         if api10s:
-            id_var = getattr(cls, "api10")
+            id_var = cls.api10
             ids = api10s
         elif api14s:
-            id_var = getattr(cls, "api14")
+            id_var = cls.api14
             ids = api14s
         else:
             raise ValueError(f"One of [api10, api14] must be specified")
 
         agg = (
             cls.query.with_entities(
-                id_var,
+                cls.api14,
+                func.max(cls.api10).label("api10"),
                 func.max(cls.total_base_water_volume).label("total_base_water_volume"),
                 func.sum(cls.ingredient_mass).cast(Integer).label("ingredient_mass"),
                 func.sum(cls.percent_hf_job).label("hf_job_pct"),
@@ -93,7 +94,7 @@ class Registry(CoreMixin, db.Model):
             )
             .filter(cls.ingredient_name.op("~*")(PROPPANT_REGEX))
             .filter(id_var.in_(ids))
-            .group_by(id_var)
+            .group_by(cls.api14)
             .subquery()
         )
 
