@@ -94,7 +94,7 @@ class BaseConfig:
     ENV_NAME = os.getenv("ENV_NAME", socket.gethostname())
 
     """ Datadog """
-    DATADOG_ENABLED = os.getenv("DATADOG_ENABLED", False)
+    DATADOG_ENABLED = to_bool(os.getenv("DATADOG_ENABLED", False))
     DATADOG_API_KEY = os.getenv("DATADOG_API_KEY", None)
     DATADOG_APP_KEY = os.getenv("DATADOG_APP_KEY", None)
 

@@ -20,11 +20,14 @@ def to_bool(value):
         "0": False,
     }
 
+    if value is None:
+        return None
+
     if isinstance(value, bool):
         return value
 
     if not isinstance(value, str):
-        raise ValueError("invalid literal for boolean. Not a string.")
+        value = str(value)
 
     lower_value = value.lower()
     if lower_value in valid:
@@ -34,7 +37,7 @@ def to_bool(value):
 
 
 def to_int(s: str) -> Union[int, None]:
-    if s:
+    if s is None:
         return None
     if isinstance(s, str):
         s = float(s)  # type: ignore
