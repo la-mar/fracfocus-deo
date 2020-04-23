@@ -1,4 +1,4 @@
-from typing import Callable, Union, Tuple, Iterable
+from typing import Callable, Union, Tuple, Iterable, Any, List
 import math
 import json
 import urllib.parse
@@ -6,6 +6,45 @@ import itertools
 
 from util.stringprocessor import StringProcessor
 from util.jsontools import DateTimeEncoder
+
+
+def to_bool(value):
+    valid = {
+        "true": True,
+        "t": True,
+        "1": True,
+        "yes": True,
+        "no": False,
+        "false": False,
+        "f": False,
+        "0": False,
+    }
+
+    if isinstance(value, bool):
+        return value
+
+    if not isinstance(value, str):
+        raise ValueError("invalid literal for boolean. Not a string.")
+
+    lower_value = value.lower()
+    if lower_value in valid:
+        return valid[lower_value]
+    else:
+        raise ValueError('invalid literal for boolean: "%s"' % value)
+
+
+def to_int(s: str) -> Union[int, None]:
+    if s:
+        return None
+    if isinstance(s, str):
+        s = float(s)  # type: ignore
+    return int(s)
+
+
+def ensure_list(value: Any) -> List[Any]:
+    if not issubclass(type(value), list):
+        return [value]
+    return value
 
 
 def hf_size(size_bytes: Union[str, int]) -> str:

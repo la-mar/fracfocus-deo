@@ -9,6 +9,7 @@ import tomlkit
 import yaml
 from attrdict import AttrDict
 from sqlalchemy.engine.url import URL
+from util import to_bool, to_int
 
 _pg_aliases = ["postgres", "postgresql", "psycopg2", "psycopg2-binary"]
 _mssql_aliases = ["mssql", "sql server"]
@@ -118,6 +119,9 @@ class BaseConfig:
     """ Logging """
     LOG_LEVEL = os.getenv("LOG_LEVEL", logging.INFO)
     LOG_FORMAT = os.getenv("LOG_FORMAT", "json")
+    WEB_LOG_REQUESTS = to_bool(os.getenv("WEB_LOG_REQUESTS", True))
+    WEB_LOG_RESPONSES = to_bool(os.getenv("WEB_LOG_RESPONSES", True))
+    WEB_LOG_SAMPLE_FRAC = float(os.getenv("WEB_LOG_SAMPLE_FRAC", 0.5))
 
     """ --------------- Sqlalchemy --------------- """
 

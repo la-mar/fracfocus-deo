@@ -7,6 +7,23 @@ DOCKERFILE:=Dockerfile
 ENV:=prod
 APP_VERSION ?= $$(grep -o '\([0-9]\+.[0-9]\+.[0-9]\+\)' pyproject.toml | head -n1)
 
+send-request:
+	http :5000/42461409160000
+	http :5000/42383406370000
+	http :5000/42461412100000
+
+	http :5000/4246140916
+	http :5000/4238340637
+	http :5000/4246141210
+
+	http :5000/api14/42461409160000
+	http :5000/api14/42383406370000
+	http :5000/api14/42461412100000
+
+	http :5000/api10/4246140916
+	http :5000/api10/4238340637
+	http :5000/api10/4246141210
+
 cc-expand:
 	# show expanded configuration
 	circleci config process .circleci/config.yml

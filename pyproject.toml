@@ -33,6 +33,7 @@ attrs = "^19.3.0"
 pyparsing = "^2.4.6"
 flask-debugtoolbar = "*"
 pandas = "^0.25.3"
+shortuuid = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
