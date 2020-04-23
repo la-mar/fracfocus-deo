@@ -1,9 +1,11 @@
 import logging
 from typing import Dict, List, Union
 
+from sqlalchemy import case
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.types import Integer
+
 
 from api.mixins import CoreMixin
 from fracfocus import db
@@ -123,7 +125,13 @@ class Registry(CoreMixin, db.Model):
             .with_entities(
                 agg3,
                 (
-                    (agg3.c.prop_mass - agg3.c.ingredient_mass) / agg3.c.ingredient_mass
+                    (agg3.c.prop_mass - agg3.c.ingredient_mass)
+                    / case(
+                        [
+                            (agg3.c.ingredient_mass == 0, agg3.c.prop_mass)
+                        ],  # avoid div/0
+                    )
+                    * 100
                 ).label("mass_diff_pct"),
             )
             .subquery()
