@@ -110,7 +110,7 @@ def get_task_definition(
                     "name": "fracfocus-web",
                     "command": ["fracfocus", "run", "web", "-b 0.0.0.0:80"],
                     "memoryReservation": 128,
-                    "cpu": 256,
+                    "cpu": 128,
                     "image": image,
                     "essential": True,
                     "portMappings": [
@@ -129,8 +129,8 @@ def get_task_definition(
                 {
                     "name": "fracfocus-collector",
                     "command": ["fracfocus", "run", "collector"],
-                    "memoryReservation": 256,
-                    "cpu": 256,
+                    "memoryReservation": 128,
+                    "cpu": 128,
                     "image": image,
                     "essential": True,
                 },
