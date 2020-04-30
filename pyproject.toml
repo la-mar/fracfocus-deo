@@ -34,6 +34,7 @@ flask-debugtoolbar = "*"
 pandas = "^0.25.3"
 shortuuid = "^1.0.1"
 gunicorn = {version = "^20.0.4", extras = ["gevent"]}
+setproctitle = "^1.1.10"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }

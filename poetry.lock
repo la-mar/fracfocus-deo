@@ -1131,6 +1131,14 @@ tornado = ["tornado (>=5)"]
 
 [[package]]
 category = "main"
+description = "A Python module to customize the process title"
+name = "setproctitle"
+optional = false
+python-versions = "*"
+version = "1.1.10"
+
+[[package]]
+category = "main"
 description = "A generator library for concise, unambiguous and URL-safe UUIDs."
 name = "shortuuid"
 optional = false
@@ -1290,7 +1298,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "77f3b2f4d98b499e8d9019bef2f19e9ce621af0154f04a4f75e08a972b6970d1"
+content-hash = "c0ab0728f50e18921399e79cd5c3b3333edcedcd7fdbe5c6b921216d121907cc"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1970,6 +1978,10 @@ s3transfer = [
 sentry-sdk = [
     {file = "sentry-sdk-0.13.5.tar.gz", hash = "sha256:c6b919623e488134a728f16326c6f0bcdab7e3f59e7f4c472a90eea4d6d8fe82"},
     {file = "sentry_sdk-0.13.5-py2.py3-none-any.whl", hash = "sha256:05285942901d38c7ce2498aba50d8e87b361fc603281a5902dda98f3f8c5e145"},
+]
+setproctitle = [
+    {file = "setproctitle-1.1.10.tar.gz", hash = "sha256:6283b7a58477dd8478fbb9e76defb37968ee4ba47b05ec1c053cb39638bd7398"},
+    {file = "setproctitle-1.1.10.zip", hash = "sha256:6a035eddac62898786aed2c2eee7334c28cfc8106e8eb29fdd117cac56c6cdf0"},
 ]
 shortuuid = [
     {file = "shortuuid-1.0.1-py3-none-any.whl", hash = "sha256:492c7402ff91beb1342a5898bd61ea953985bf24a41cd9f247409aa2e03c8f77"},
