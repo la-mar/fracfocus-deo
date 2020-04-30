@@ -108,7 +108,7 @@ def get_task_definition(
             "containerDefinitions": [
                 {
                     "name": "fracfocus-web",
-                    "command": ["fracfocus", "run", "web", "-b 0.0.0.0:80"],
+                    "command": ["fracfocus", "run", "web"],
                     "memoryReservation": 128,
                     "cpu": 128,
                     "image": image,
@@ -129,7 +129,7 @@ def get_task_definition(
                 {
                     "name": "fracfocus-collector",
                     "command": ["fracfocus", "run", "collector"],
-                    "memoryReservation": 128,
+                    "memoryReservation": 512,
                     "cpu": 128,
                     "image": image,
                     "essential": True,
@@ -140,6 +140,7 @@ def get_task_definition(
             "networkMode": "bridge",
             "taskRoleArn": task_iam_role_arn,
             "tags": tags,
+            "cpu": "512",
         },
     }
 

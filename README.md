@@ -26,4 +26,5 @@ DATABASE_PASSWORD=YOUR_DATABASE_PASSWORD
 FLASK_APP=fracfocus.manage.py
 FLASK_ENV=production
 SECRET_KEY=my_precious
+GUNICORN_CMD_ARGS="--bind=0.0.0.0:80 --log-level=info --name=gunicorn-fracfocus --timeout=120 --graceful-timeout=120 --worker-class=gevent --workers=3"
 ```
