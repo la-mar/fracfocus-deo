@@ -7,6 +7,10 @@ DOCKERFILE:=Dockerfile
 ENV:=prod
 APP_VERSION ?= $$(grep -o '\([0-9]\+.[0-9]\+.[0-9]\+\)' pyproject.toml | head -n1)
 
+ssm:
+	chamber export ${SERVICE_NAME} | jq
+	chamber export ${SERVICE_NAME}-collector | jq
+
 send-request:
 	http :5000/42461409160000
 	http :5000/42383406370000
