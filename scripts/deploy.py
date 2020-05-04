@@ -108,7 +108,21 @@ def get_task_definition(
             "containerDefinitions": [
                 {
                     "name": "fracfocus-web",
-                    "command": ["fracfocus", "run", "web"],
+                    "command": [
+                        "chamber",
+                        "exec",
+                        "fracfocus",
+                        "datadog",
+                        "--",
+                        "fracfocus",
+                        "run",
+                        "web",
+                        "--bind",
+                        "0.0.0.0:80",
+                        "--name",
+                        "gunicorn-fracfocus",
+                        "--preload",
+                    ],
                     "memoryReservation": 128,
                     "cpu": 128,
                     "image": image,

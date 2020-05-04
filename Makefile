@@ -12,9 +12,9 @@ ssm:
 	chamber export ${SERVICE_NAME}-collector | jq
 
 send-request:
-	http :5000/42461409160000
-	http :5000/42383406370000
-	http :5000/42461412100000
+	http :8000/42461409160000
+	http :8000/42383406370000
+	http :8000/42461412100000
 
 	http :5000/4246140916
 	http :5000/4238340637
@@ -76,40 +76,20 @@ celery-worker:
 celery-beat:
 	celery -A fracfocus.celery_queue.worker:celery beat --loglevel=DEBUG
 
-kubectl-proxy:
-	kubectl proxy --port=8080
-
 login:
 	docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
 build:
 	@echo "Building docker image: ${IMAGE_NAME}"
 	docker build  -f Dockerfile . -t ${IMAGE_NAME}
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${COMMIT_HASH}
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${APP_VERSION}
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:dev
 	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:latest
 
 
-build-with-chamber:
-	@echo "Building docker image: ${IMAGE_NAME} (with chamber)"
-	docker build  -f Dockerfile.chamber . -t ${IMAGE_NAME}
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-${COMMIT_HASH}
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-${APP_VERSION}
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-latest
-	docker tag ${IMAGE_NAME} ${IMAGE_NAME}:chamber-dev
-
-build-all: build-with-chamber build
-
 push: login
-	docker push ${IMAGE_NAME}:dev
-	docker push ${IMAGE_NAME}:${COMMIT_HASH}
+	# docker push ${IMAGE_NAME}:dev
+	# docker push ${IMAGE_NAME}:${COMMIT_HASH}
 	docker push ${IMAGE_NAME}:latest
-
-push-all: login push
-	docker push ${IMAGE_NAME}:chamber-dev
-	docker push ${IMAGE_NAME}:chamber-${COMMIT_HASH}
-	docker push ${IMAGE_NAME}:chamber-latest
 
 push-version:
 	# docker push ${IMAGE_NAME}:latest
@@ -117,8 +97,8 @@ push-version:
 	docker push ${IMAGE_NAME}:${APP_VERSION}
 	docker push ${IMAGE_NAME}:chamber-${APP_VERSION}
 
-all:
-	make build-all push-all
+all: build push
+
 
 	# make fracfocus-redis-deo build login push
 

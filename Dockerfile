@@ -1,4 +1,6 @@
 
+FROM segment/chamber:2.7.5 as build
+
 FROM python:3.7 as base
 
 LABEL "com.datadoghq.ad.logs"='[{"source": "python", "service": "fracfocus"}]'
@@ -16,7 +18,7 @@ ENV PYTHONFAULTHANDLER=1 \
 ENV PYTHONPATH=/app/fracfocus
 
 RUN pip install "poetry==$POETRY_VERSION"
-ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
+ENV PATH "/root/.poetry/bin:/opt/venv/bin:/:${PATH}"
 
 # copy only requirements to cache them in docker layer
 WORKDIR /app
@@ -35,3 +37,5 @@ COPY . /app
 
 # run again to install app from source
 RUN poetry install --no-dev --no-interaction
+
+COPY --from=build /chamber /chamber

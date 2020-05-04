@@ -2,22 +2,11 @@ version: "3.7"
 
 x-defaults: &defaults
   image: driftwood/fracfocus
-  # build:
-  #   context: .
-  #   dockerfile: Dockerfile
   restart: unless-stopped
-  environment:
-    - AWS_REGION
-    - AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY
-    - AWS_SESSION_TOKEN
-    - AWS_SECURITY_TOKEN
-  # env_file: .env
-
+  env_file: .env.compose
 services:
   web:
     <<: *defaults
-    # entrypoint: fracfocus
     command: fracfocus run web -b 0.0.0.0:9091
     ports:
       - "9091:9091"

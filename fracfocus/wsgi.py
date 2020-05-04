@@ -1,4 +1,8 @@
 """ Entrypoint for WSGI HTTP Server, usually gunicorn """
+from gevent import monkey
+
+monkey.patch_all()
+
 from fracfocus import create_app
 
 

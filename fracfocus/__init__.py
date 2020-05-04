@@ -48,17 +48,16 @@ def create_app(script_info=None):
     def ctx():  # pylint: disable=unused-variable
         return {"app": app, "db": db}
 
+
     @app.before_request
     def before_request():
         g.start = time.time()
         request.id = shortuuid.uuid()
-        request.should_log = (
-            random.random() > conf.WEB_LOG_SAMPLE_FRAC
-        )  # pairs request/response logs # noqa
+        request.should_log = random.random() < conf.WEB_LOG_SAMPLE_FRAC  # pairs request/response logs # noqa
         request.arg_counts = {
             k: len(ensure_list(v)) for k, v in (request.args or {}).items()
         }
-        request.arg_count_str = "".join(
+        request.arg_count_str = " ".join(
             [f" {k}s={v}" for k, v in request.arg_counts.items()]
         )
 
@@ -89,7 +88,8 @@ def create_app(script_info=None):
         """ Logging after every request. """
 
         now = time.time()
-        duration = round(now - g.start, 2)
+        duration = round(now - g.start, 2)  # seconds
+        is_slow_response = duration >= conf.WEB_LOG_SLOW_RESPONSE_THRESHOLD
 
         if conf.WEB_LOG_RESPONSES:
             attrs = {
@@ -114,12 +114,15 @@ def create_app(script_info=None):
                 },
             }
 
-        if request.should_log:
-            logger.info(
-                f"[{request.id}] RESPONSE - {request.scheme}:{request.path}{request.arg_count_str} -> {response.status} ({duration}s)",  # noqa
-                extra=attrs,
-            )
+            if request.should_log or is_slow_response:  # always log slow responses
+                logger.info(
+                    f"[{request.id}] RESPONSE - {request.scheme}:{request.path}{request.arg_count_str} -> {response.status} ({duration}s)",  # noqa
+                    extra=attrs,
+                )
 
         return response
+
+
+
 
     return app
