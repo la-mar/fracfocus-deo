@@ -36,12 +36,12 @@ resource "aws_ecs_service" "web" {
   cluster         = data.terraform_remote_state.web_cluster.outputs.cluster_arn
   task_definition = data.aws_ecs_task_definition.web.family
 
-  scheduling_strategy = "REPLICA"
-  ordered_placement_strategy {
-    type  = "spread"
-    field = "instanceId"
-  }
-  desired_count           = var.ecs_service_desired_count_web
+  scheduling_strategy = "DAEMON"
+  # ordered_placement_strategy {
+  #   type  = "spread"
+  #   field = "instanceId"
+  # }
+  # desired_count           = var.ecs_service_desired_count_web
   enable_ecs_managed_tags = true
   propagate_tags          = "TASK_DEFINITION"
   tags                    = local.tags
