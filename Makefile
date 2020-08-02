@@ -4,7 +4,7 @@ CTX:=.
 AWS_ACCOUNT_ID:=$$(aws-vault exec ${ENV} -- aws sts get-caller-identity | jq .Account -r)
 IMAGE_NAME:=driftwood/fracfocus
 DOCKERFILE:=Dockerfile
-ENV:=prod
+ENV:=deo-prod
 APP_VERSION ?= $$(grep -o '\([0-9]\+.[0-9]\+.[0-9]\+\)' pyproject.toml | head -n1)
 
 ssm:
@@ -137,7 +137,7 @@ secret-key:
 	python3 -c 'import secrets; print(secrets.token_urlsafe(256));'
 
 docker-run-collector:
-	aws-vault exec prod -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run collector
+	aws-vault exec ${ENV} -- docker run -e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_SECURITY_TOKEN -e LOG_FORMAT driftwood/fracfocus fracfocus run collector
 
 docker-run-collector-local:
 	docker run --env-file .env.compose driftwood/fracfocus fracfocus run collector
